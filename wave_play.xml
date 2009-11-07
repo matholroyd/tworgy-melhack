@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+  <ModulePrefs title="Status Update">
+    <Require feature="wave"/>
+    <Require feature="dynamic-height" />   
+   </ModulePrefs>
+  <Content type="html">
+    <![CDATA[
+      <div> 
+        <script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js"></script>
+      
+        <h1>What are you working on?</h1>
+        <p>
+          <input type=text value="" id="txtStatus">
+        </p>
+        <p>
+          <input type=button value="Update Status" id='butUpdateStatus' onClick="recordStatus();">
+        </p>
+        <div id='status_summary'> </div>
+        <h2>Debug</h2>
+        <div id='my_debug'> </div>
+        <hr />
+
+        <script type="text/javascript">
+          var summary = $('#status_summary');
+          var status = $('#txtStatus');
+          var debug = $('#my_debug');
+
+          function recordStatus() {
+            wave.getState().submitDelta({'status': status.val()}); 
+          }
+
+          function stateUpdated() {
+            if(!wave.getState().get('status')) {
+              summary.text("your status is not set!");
+            }
+            else {
+              summary.text("Your status is " + wave.getState().get('status'));
+            } 
+          }
+
+          function init() {
+            if (wave && wave.isInWaveContainer()) {
+              wave.setStateCallback(stateUpdated);
+            }
+          
+            debug.text(wave.getParticipants().length);
+          }
+        
+          gadgets.util.registerOnLoadHandler(init);
+
+        </script>
+    
+      </div>
+    ]]>
+  </Content>
+</Module>
