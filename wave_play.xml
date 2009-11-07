@@ -3,13 +3,13 @@
   <ModulePrefs title="Status Update">
     <Require feature="wave"/>
     <Require feature="dynamic-height" />   
-   </ModulePrefs>
+  </ModulePrefs>
   <Content type="html">
     <![CDATA[
       <div> 
         <script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js"></script>
       
-        <h1>What are you working on?</h1>
+        <h1>What is your status?</h1>
         <p>
           <input type=text value="" id="txtStatus">
         </p>
@@ -17,7 +17,6 @@
           <input type=button value="Update Status" id='butUpdateStatus' onClick="recordStatus();">
         </p>
         <div id='status_summary'> </div>
-        <h2>Debug</h2>
         <div id='my_debug'> </div>
         <hr />
 
@@ -25,18 +24,25 @@
           var summary = $('#status_summary');
           var status = $('#txtStatus');
           var debug = $('#my_debug');
-
+ 
           function recordStatus() {
-            wave.getState().submitDelta({'status': status.val()}); 
+            viewerId = wave.getViewer().getId().toString();
+            state = wave.getState();
+            
+            delta = {};
+            delta[viewerId] = status.val();
+            
+            state.submitDelta(delta);
           }
 
           function stateUpdated() {
-            if(!wave.getState().get('status')) {
-              summary.text("your status is not set!");
+            state = wave.getState();
+            keys = state.getKeys();
+
+            summary.html('');
+            for(i = 0; i < keys.length; i++) {
+              summary.html("<p>" + keys[i] + " is " + state.get(keys[i]) + "</p>" + summary.html());
             }
-            else {
-              summary.text("Your status is " + wave.getState().get('status'));
-            } 
           }
 
           function init() {
