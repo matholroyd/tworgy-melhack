@@ -17,13 +17,10 @@
           <input type=button value="Update Status" id='butUpdateStatus' onClick="recordStatus();">
         </p>
         <div id='status_summary'> </div>
-        <div id='my_debug'> </div>
-        <hr />
 
         <script type="text/javascript">
           var summary = $('#status_summary');
           var status = $('#txtStatus');
-          var debug = $('#my_debug');
  
           function recordStatus() {
             viewerId = wave.getViewer().getId().toString();
@@ -43,14 +40,13 @@
             for(i = 0; i < keys.length; i++) {
               summary.html("<p>" + keys[i] + " is " + state.get(keys[i]) + "</p>" + summary.html());
             }
+            gadgets.window.adjustHeight();
           }
 
           function init() {
             if (wave && wave.isInWaveContainer()) {
               wave.setStateCallback(stateUpdated);
             }
-          
-            debug.text(wave.getParticipants().length);
           }
         
           gadgets.util.registerOnLoadHandler(init);
