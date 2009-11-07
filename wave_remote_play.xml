@@ -1,89 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Module>
-  <ModulePrefs title="Fetch XML" scrolling="true"/>
-  <UserPref 
-    name="mycalories" 
-    display_name="Calorie limit" 
-    default_value="800"/>
-  <UserPref 
-    name="mychoice" 
-    display_name="Show Descriptions" 
-    datatype="bool" 
-    default_value="false"/>
+  <ModulePrefs title="Fetch XML" scrolling="true">
+    <Require feature="wave"/>
+    <Require feature="dynamic-height" />   
+  </ModulePrefs>
   <Content type="html">
   <![CDATA[
-    <div id="content_div"></div>
-    <script type="text/javascript">
-      var prefs = new gadgets.Prefs();
-      var calorieLimit = prefs.getString("mycalories");
-      var description = prefs.getBool("mychoice");
+    <script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js"></script>
+  
+    <fieldset>
+      <legend>Look up a lonely planet place</legend>
+      <!-- <form onSubmit='searchPlace(); return false;'> -->
+        <p>
+          <input type=text value="melbourne" id="field_place" size='70'>
+        </p>
+        <p>
+          <input type=button value="Find place" onClick="searchPlace();">
+        </p>
+      <!-- </form> -->
+      
+      <div id="content_div"></div>
+            
+    </fieldset>
+  
+    <script type="text/javascript">      
+      function searchPlace() {
+        requestPlaces($('#field_place').val());
+      }
 
-      function makeDOMRequest() {    
+      function requestPlaces(place) {
+        makeDOMRequest("http://apigateway.lonelyplanet.com/api/places?name=" + place, processPlace);
+      }
+      
+      function requestPOIs(poi_id) {
+        makeDOMRequest("http://apigateway.lonelyplanet.com/api/pois?place_id=" + poi_id, processPOI);
+      }
+      
+      function makeDOMRequest(url, callback) {    
         var params = {};  
         params[gadgets.io.RequestParameters.CONTENT_TYPE] = gadgets.io.ContentType.DOM;  
-        var url = "http://gadget-doc-examples.googlecode.com/svn/trunk/opensocial-gadgets/breakfast-data.xml";  
-        gadgets.io.makeRequest(url, response, params);
+        gadgets.io.makeRequest(url, callback, params);
       };
-      function response(obj) { 
-        var html = "<div style='padding: 5px;background-color: #ccf;font-family:Arial, Helvetica;" 
-          + "text-align:left;font-size:90%'>";   
-        html +="<div style='text-align:center; font-size: 120%; color: yellow; " 
-          + "font-weight: 700;'>"; 
+            
+      function processPlace(obj) {
         var domdata = obj.data;
+        var places = domdata.getElementsByTagName("id");
+        requestPOIs(places.item(0).firstChild.nodeValue);
+      }
 
-        var title = domdata.getElementsByTagName("menu").item(0).getAttribute("title");
-
-        html += title + "</div><br>"; 
-        var itemList = domdata.getElementsByTagName("food");
- 
-        for (var i = 0; i < itemList.length ; i++) { 
-        var nodeList = itemList.item(i).childNodes;
-
-        for (var j = 0; j < nodeList.length ; j++) {
-          var node = nodeList.item(j);
-          if (node.nodeName == "name") 
-          {
-            var name = node.firstChild.nodeValue;
-          }
-          if (node.nodeName == "price") 
-          {
-            var price = node.firstChild.nodeValue;
-          }
-          if (node.nodeName == "calories") 
-          {
-            var calories = node.firstChild.nodeValue; 
-          }
-          if (node.nodeName == "description" && description==true)
-          {
-            if (node.firstChild.nodeName == "#cdata-section") 
-              var data = node.firstChild.nodeValue;
-          }
-        } 
-
-        html += "<i><b>";
-        html += name;
-        html += "</b></i><br>";
-        html += "&emsp;"; 
-        html += price;
-        html += " - ";
-
-        if(calories > calorieLimit) {
-          html += "<font color=#ff0000>";
-          html += calories + " calories";
-          html += " </font>"; 
+      function processPOI(obj) {
+        var domdata = obj.data;
+        var pois = domdata.getElementsByTagName("poi");
+        var html = "";
+        html += "<h2>Places of interest are...</h2>";
+        html += "<ul>";
+        for(var i = 0; i < pois.length; i++) {
+          var name = pois.item(i).firstChild.nodeName;
+          html += "<li>";
+          html += name;
+          html += "</li>";
         }
-        else
-          html += calories + " calories";
-        html += "<br>";
-        if (description==true) 
-        {
-          html += "<i>" + data + "</i><br>";
-        } 
-      } 
-      html += "</div>";
-      document.getElementById('content_div').innerHTML = html;
-    };
-    gadgets.util.registerOnLoadHandler(makeDOMRequest);
+        html += "</ul>";
+        $('#content_div').html(html);
+        gadgets.window.adjustHeight();
+      }
+
     </script>
   ]]>
   </Content>
